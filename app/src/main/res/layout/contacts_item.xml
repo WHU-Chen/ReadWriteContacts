@@ -3,6 +3,7 @@
     android:orientation="horizontal" android:layout_width="match_parent"
     android:descendantFocusability="blocksDescendants"
     android:layout_height="match_parent">
+    <!--//Learning-->
     <LinearLayout
         android:orientation="vertical"
         android:layout_gravity="center_vertical|left"

@@ -55,17 +55,35 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        readContact();
+        sortContact();
         listView= (ListView) findViewById(R.id.list_view);
         adapter=new ContactAdapter(this , R.layout.contacts_item, contactsList);
         listView.setAdapter(adapter);
-        readContact();
-        sortContact();
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+            public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
                 CheckBox checkBox = (CheckBox) view.findViewById(R.id.checkbox);
-                if (checkBox.isChecked()) checkBox.setChecked(false);
-                else checkBox.setChecked(true);
+                String name=((TextView)view.findViewById(R.id.text_name)).getText().toString();
+                String number=((TextView)view.findViewById(R.id.text_number)).getText().toString();
+                if (checkBox.isChecked()) {
+                    checkBox.setChecked(false);
+                    for(Contact i:contactsList){
+                        if(i.getName().equals(name)&&i.getNumber().equals(number)) {
+                            i.isChecked = false;
+                            break;
+                        }
+                    }
+                }
+                else {
+                    checkBox.setChecked(true);
+                    for(Contact i:contactsList){
+                        if(i.getName().equals(name)&&i.getNumber().equals(number)) {
+                            i.isChecked = true;
+                            break;
+                        }
+                    }
+                }
             }
         });
         Log.d("MainActivity", "onCreateFinished");
@@ -78,15 +96,10 @@ public class MainActivity extends Activity {
                 try{
                     out=openFileOutput("data", Context.MODE_PRIVATE);
                     writer=new BufferedWriter(new OutputStreamWriter(out));
-                    for(int i=0;i<listView.getChildCount();i++){
-                        View childView=listView.getChildAt(i);
-                        CheckBox checkBox= (CheckBox) childView.findViewById(R.id.checkbox);
-                        String name= ((TextView) childView.findViewById(R.id.text_name)).getText().toString();
-                        String number= ((TextView) childView.findViewById(R.id.text_number)).getText().toString();
-                        if(checkBox.isChecked()){
-                            writer.write(name+"\n"+number+"\n");
+                    for(Contact contact:contactsList){
+                        if(contact.isChecked){
+                            writer.write(contact.getName()+"\n"+contact.getNumber()+"\n");
                         }
-
                     }
                 } catch (FileNotFoundException e1) {
                     e1.printStackTrace();
@@ -105,7 +118,6 @@ public class MainActivity extends Activity {
             }
         });
     }
-
     private void readContact(){
         Cursor cursor =null;
         try{

@@ -85,12 +85,19 @@ public class MainFaceActivity extends Activity {
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        readContacts();
+    }
+
+    @Override
     protected void onDestroy() {
         super.onDestroy();
         unregisterReceiver(sendStatusReceiver);
     }
 
     private void readContacts(){
+        listContact.clear();
         FileInputStream in=null;
         BufferedReader reader=null;
         try{

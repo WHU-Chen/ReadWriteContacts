@@ -40,6 +40,7 @@ public class ContactAdapter extends ArrayAdapter<Contact> {
             viewHolder= (ViewHolder) view.getTag();
         }
         if(contact.isChecked)viewHolder.checkBox.setChecked(true);
+        else viewHolder.checkBox.setChecked(false);
         viewHolder.name.setText(contact.getName());
         viewHolder.number.setText(contact.getNumber());
         return view;
