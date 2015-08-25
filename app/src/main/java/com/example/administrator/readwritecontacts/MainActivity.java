@@ -39,6 +39,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.nio.Buffer;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 
@@ -58,7 +59,7 @@ public class MainActivity extends Activity {
         adapter=new ContactAdapter(this , R.layout.contacts_item, contactsList);
         listView.setAdapter(adapter);
         readContact();
-
+        sortContact();
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
@@ -151,6 +152,11 @@ public class MainActivity extends Activity {
                 }
             }
         }
+
+    }
+    private void sortContact(){
+        ComparatorContact comparatorContact=new ComparatorContact();
+        Collections.sort(contactsList,comparatorContact);
     }
 
 }

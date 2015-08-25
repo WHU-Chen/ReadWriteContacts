@@ -1,7 +1,11 @@
 package com.example.administrator.readwritecontacts;
 
 import android.app.Activity;
+import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -24,6 +28,9 @@ public class MainFaceActivity extends Activity {
 
     List<String> listContact=new ArrayList<String>();
 
+    private IntentFilter sendFilter;
+    private  SendStatusReceiver sendStatusReceiver;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -32,6 +39,12 @@ public class MainFaceActivity extends Activity {
         Button btnEdit= (Button) findViewById(R.id.btnEdit);
         Button btnSave= (Button) findViewById(R.id.btnSave);
         final EditText editText= (EditText) findViewById(R.id.etText);
+
+        sendFilter=new IntentFilter();
+        sendFilter.addAction("SENT_SMS_ACTION");
+        sendStatusReceiver=new SendStatusReceiver();
+        registerReceiver(sendStatusReceiver,sendFilter);
+
         SharedPreferences pref=getSharedPreferences("data",MODE_PRIVATE);
         editText.setText(pref.getString("editText","Help!"));
         readContacts();
@@ -56,16 +69,25 @@ public class MainFaceActivity extends Activity {
             @Override
             public void onClick(View view) {
                 SmsManager smsManager = SmsManager.getDefault();
+                Intent sentIntent = new Intent("SENT_SMS_ACTION");
+                PendingIntent pi=PendingIntent.getBroadcast(MainFaceActivity.this,0,sentIntent,0);
                 for(String i:listContact) {
                     smsManager.sendTextMessage(
                             i,
                             null,
                             editText.getText().toString(),
-                            null,
-                            null);
+                            pi,
+                            PendingIntent.getBroadcast(MainFaceActivity.this, 0, sentIntent, 0));
                 }
+
             }
         });
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        unregisterReceiver(sendStatusReceiver);
     }
 
     private void readContacts(){
@@ -88,6 +110,19 @@ public class MainFaceActivity extends Activity {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+            }
+        }
+    }
+
+    class SendStatusReceiver extends BroadcastReceiver{
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String name="to "+intent.getStringExtra("name");
+            if(name.equals("to null"))name="";
+            if(getResultCode()==RESULT_OK){
+                Toast.makeText(context,"Sending "+name+" succeeded",Toast.LENGTH_LONG).show();
+            }else {
+                Toast.makeText(context,"Sending "+name+" failed",Toast.LENGTH_LONG).show();
             }
         }
     }
