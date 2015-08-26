@@ -45,9 +45,11 @@ import java.util.List;
 
 public class MainActivity extends Activity {
 
-    ListView listView;
+    ListView listView,chosenListView;
 
     ContactAdapter adapter;
+
+    ChosenContactAdapter chosenContactAdapter;
 
     List<Contact> contactsList = new ArrayList<Contact>(), chosenList=new ArrayList<Contact>();
 
@@ -55,11 +57,27 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        readContact();
-        sortContact();
+
+
         listView= (ListView) findViewById(R.id.list_view);
         adapter=new ContactAdapter(this , R.layout.contacts_item, contactsList);
         listView.setAdapter(adapter);
+
+        chosenListView= (ListView) findViewById(R.id.chosen_contacts);
+        chosenContactAdapter= new ChosenContactAdapter(this,R.layout.chosen_contacts_item,chosenList);
+        chosenListView.setAdapter(chosenContactAdapter);
+
+        readContact();
+        sortContact();
+
+        chosenListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                String name=((TextView)view.findViewById(R.id.text_name)).getText().toString();
+                String number=((TextView)view.findViewById(R.id.text_number)).getText().toString();
+                turnContactChecked(new Contact(name,number),false);
+            }
+        });
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
@@ -68,21 +86,13 @@ public class MainActivity extends Activity {
                 String number=((TextView)view.findViewById(R.id.text_number)).getText().toString();
                 if (checkBox.isChecked()) {
                     checkBox.setChecked(false);
-                    for(Contact i:contactsList){
-                        if(i.getName().equals(name)&&i.getNumber().equals(number)) {
-                            i.isChecked = false;
-                            break;
-                        }
-                    }
+                    turnContactChecked(new Contact(name,number),false);
+
                 }
                 else {
                     checkBox.setChecked(true);
-                    for(Contact i:contactsList){
-                        if(i.getName().equals(name)&&i.getNumber().equals(number)) {
-                            i.isChecked = true;
-                            break;
-                        }
-                    }
+                    turnContactChecked(new Contact(name, number), true);
+
                 }
             }
         });
@@ -96,10 +106,8 @@ public class MainActivity extends Activity {
                 try{
                     out=openFileOutput("data", Context.MODE_PRIVATE);
                     writer=new BufferedWriter(new OutputStreamWriter(out));
-                    for(Contact contact:contactsList){
-                        if(contact.isChecked){
+                    for(Contact contact:chosenList){
                             writer.write(contact.getName()+"\n"+contact.getNumber()+"\n");
-                        }
                     }
                 } catch (FileNotFoundException e1) {
                     e1.printStackTrace();
@@ -146,12 +154,8 @@ public class MainActivity extends Activity {
             String name="",number="";
             while((name=reader.readLine())!=null){
                 number=reader.readLine();
-                for(Contact i:contactsList){
-                    if(i.getName().equals(name)&&i.getNumber().equals(number)) {
-                        i.isChecked = true;
-                        break;
-                    }
-                }
+                turnContactChecked(new Contact(name, number), true);
+
             }
         }catch(IOException e){
             e.printStackTrace();
@@ -168,7 +172,28 @@ public class MainActivity extends Activity {
     }
     private void sortContact(){
         ComparatorContact comparatorContact=new ComparatorContact();
-        Collections.sort(contactsList,comparatorContact);
+        Collections.sort(contactsList, comparatorContact);
     }
-
+    private void turnContactChecked(Contact contact,boolean checked){
+        for(Contact i:contactsList){
+            if(i.getName().equals(contact.getName())&&i.getNumber().equals(contact.getNumber())) {
+                i.isChecked = checked;
+                if(checked){
+                    addToChosenList(i);
+                }else{
+                    deleteFromChosenList(i);
+                }
+                break;
+            }
+        }
+        adapter.notifyDataSetChanged();
+    }
+    private void addToChosenList(Contact contact){
+        chosenList.add(contact);
+        chosenContactAdapter.notifyDataSetChanged();
+    }
+    private void deleteFromChosenList(Contact contact){
+        chosenList.remove(contact);
+        chosenContactAdapter.notifyDataSetChanged();
+    }
 }
