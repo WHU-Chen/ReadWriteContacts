@@ -5,4 +5,5 @@
     <string name="action_settings">Settings</string>
     <string name="submit">确定</string>
     <string name="title_activity_main_face">MainFaceActivity</string>
+    <string name="initialSms">这是一条紧急短信，当你收到这条短信就说明我正处在危险之中，请帮我报警。</string>
 </resources>
